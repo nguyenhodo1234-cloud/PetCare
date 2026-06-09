@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --color-heal-50: #e3f2fd;
+    --color-heal-100: #bbdefb;
+    --color-heal-200: #90caf9;
+    --color-heal-400: #42a5f5;
+    --color-heal-500: #2196f3;
+    --color-heal-600: #1e88e5;
+    --color-heal-700: #1976d2;
+    --color-heal-800: #1565c0;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        font-family: var(--font-sans);
+    }
+    body {
+        @apply bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100;
+        transition:
+            background-color 0.3s ease,
+            color 0.3s ease;
+    }
+    ::selection {
+        @apply bg-heal-100 text-heal-800 dark:bg-heal-500/30 dark:text-heal-200;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center gap-2 px-6 py-3 bg-heal-500 hover:bg-heal-600 text-white font-semibold rounded-xl shadow-lg shadow-heal-500/25 hover:shadow-heal-500/40 transition-all duration-300;
+    }
+    .btn-outline {
+        @apply inline-flex items-center gap-2 px-6 py-3 border-2 border-heal-500 text-heal-600 dark:text-heal-400 hover:bg-heal-50 dark:hover:bg-heal-500/10 font-semibold rounded-xl transition-all duration-300;
+    }
+    .card {
+        @apply bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300;
+    }
+    .section-padding {
+        @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20;
+    }
+    .container-max {
+        @apply max-w-7xl mx-auto;
+    }
+}
