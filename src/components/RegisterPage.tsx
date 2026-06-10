@@ -72,9 +72,29 @@ export default function RegisterPage({ onRegister }: RegisterPageProps) {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const res = await fetch("http://localhost:3001/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          password: form.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrors({ email: data.error });
+        setLoading(false);
+        return;
+      }
+      onRegister?.();
+      window.location.href = "/login";
+    } catch {
+      setErrors({ email: "Không thể kết nối server" });
+    }
     setLoading(false);
-    onRegister?.();
   };
 
   const socials = [

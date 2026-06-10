@@ -51,9 +51,26 @@ export default function LoginPage({ onLogin }: AuthPageProps) {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const res = await fetch("http://localhost:3001/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrors({ email: data.error });
+        setLoading(false);
+        return;
+      }
+      if (form.remember)
+        localStorage.setItem("petheal_user", JSON.stringify(data.user));
+      onLogin?.();
+      window.location.href = "/";
+    } catch {
+      setErrors({ email: "Không thể kết nối server" });
+    }
     setLoading(false);
-    onLogin?.();
   };
 
   const socials = [
