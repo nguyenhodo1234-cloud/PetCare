@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import ForgotPasswordPage from "./components/ForgotPasswordPage";
+
 function HomePage() {
   return (
     <>
@@ -18,6 +19,7 @@ function HomePage() {
     </>
   );
 }
+
 export default function App() {
   return (
     <BrowserRouter>
