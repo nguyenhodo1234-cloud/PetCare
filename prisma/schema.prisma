@@ -365,3 +365,20 @@ enum NotificationType {
   SYSTEM
   PROMOTION
 }
+
+model PartnerRegistration {
+  id              Int      @id @default(autoincrement())
+  businessType    String   @map("business_type") @db.VarChar(20)
+  shopName        String   @map("shop_name") @db.VarChar(200)
+  ownerName       String   @map("owner_name") @db.VarChar(100)
+  phone           String   @db.VarChar(20)
+  email           String   @db.VarChar(100)
+  address         String   @db.VarChar(300)
+  businessLicense String?  @map("business_license") @db.VarChar(500)
+  vetCertificate  String?  @map("vet_certificate") @db.VarChar(500)
+  status          String   @default("pending") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("partner_registrations")
+}

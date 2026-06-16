@@ -8,12 +8,34 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+let isRefreshing = false;
+
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+    const original = err.config;
+    if (err.response?.status === 401 && !isRefreshing && !original._retry) {
+      original._retry = true;
+      isRefreshing = true;
+      try {
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken) throw new Error("No refresh token");
+        const res = await axios.post("/api/auth/refresh", {
+          refresh_token: refreshToken,
+        });
+        const { access_token, refresh_token } = res.data;
+        localStorage.setItem("token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+        original.headers.Authorization = `Bearer ${access_token}`;
+        isRefreshing = false;
+        return api(original);
+      } catch {
+        isRefreshing = false;
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(err);
   },

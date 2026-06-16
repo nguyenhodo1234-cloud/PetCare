@@ -64,11 +64,111 @@ router.patch(
   },
 );
 router.get("/admin/stats", authorize("ADMIN"), async (_req, res) => {
-  const [users, appointments, shops] = await Promise.all([
+  const [users, appointments, shops, partners] = await Promise.all([
     prisma.user.count(),
     prisma.appointment.count(),
     prisma.shop.count(),
+    prisma.partnerRegistration.count({ where: { status: "pending" } }),
   ]);
-  res.json({ success: true, data: { users, appointments, shops } });
+  res.json({ success: true, data: { users, appointments, shops, partners } });
 });
+
+// Partner registrations management
+router.get("/admin/partners", authorize("ADMIN"), async (_req, res) => {
+  const data = await prisma.partnerRegistration.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+  res.json({ success: true, data });
+});
+
+router.patch(
+  "/admin/partners/:id/approve",
+  authorize("ADMIN"),
+  async (req, res) => {
+    const id = +req.params.id;
+    const reg = await prisma.partnerRegistration.findUnique({ where: { id } });
+    if (!reg)
+      return res.status(404).json({ success: false, error: "Không tìm thấy" });
+
+    await prisma.partnerRegistration.update({
+      where: { id },
+      data: { status: "approved" },
+    });
+
+    res.json({ success: true });
+  },
+);
+
+router.patch(
+  "/admin/partners/:id/reject",
+  authorize("ADMIN"),
+  async (req, res) => {
+    await prisma.partnerRegistration.update({
+      where: { id: +req.params.id },
+      data: { status: "rejected" },
+    });
+    res.json({ success: true });
+  },
+);
+
+// Update partner registration
+router.put("/admin/partners/:id", authorize("ADMIN"), async (req, res) => {
+  const id = +req.params.id;
+  const { shopName, ownerName, phone, email, address, businessType } = req.body;
+  const reg = await prisma.partnerRegistration.findUnique({ where: { id } });
+  if (!reg)
+    return res.status(404).json({ success: false, error: "Không tìm thấy" });
+
+  // Check trùng email (nếu đổi)
+  if (email && email !== reg.email) {
+    const dup = await prisma.partnerRegistration.findFirst({
+      where: { email: email.toLowerCase().trim(), id: { not: id } },
+    });
+    if (dup)
+      return res.status(409).json({
+        success: false,
+        error: "Email đã được sử dụng bởi đăng ký khác",
+        field: "email",
+      });
+  }
+
+  // Check trùng SĐT (nếu đổi)
+  const cleanPhone = phone?.replace(/\s/g, "");
+  if (cleanPhone && cleanPhone !== reg.phone) {
+    const dup = await prisma.partnerRegistration.findFirst({
+      where: { phone: cleanPhone, id: { not: id } },
+    });
+    if (dup)
+      return res.status(409).json({
+        success: false,
+        error: "SĐT đã được sử dụng bởi đăng ký khác",
+        field: "phone",
+      });
+  }
+
+  const updated = await prisma.partnerRegistration.update({
+    where: { id },
+    data: {
+      ...(shopName && { shopName }),
+      ...(ownerName && { ownerName }),
+      ...(cleanPhone && { phone: cleanPhone }),
+      ...(email && { email: email.toLowerCase().trim() }),
+      ...(address && { address }),
+      ...(businessType && { businessType }),
+    },
+  });
+  res.json({ success: true, data: updated });
+});
+
+// Delete partner registration
+router.delete("/admin/partners/:id", authorize("ADMIN"), async (req, res) => {
+  const id = +req.params.id;
+  const reg = await prisma.partnerRegistration.findUnique({ where: { id } });
+  if (!reg)
+    return res.status(404).json({ success: false, error: "Không tìm thấy" });
+  await prisma.partnerRegistration.delete({ where: { id } });
+  res.json({ success: true });
+});
+
 export default router;

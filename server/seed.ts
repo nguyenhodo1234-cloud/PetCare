@@ -20,7 +20,7 @@ async function seed() {
   for (const u of users) {
     await prisma.user.upsert({
       where: { email: u.email },
-      update: {},
+      update: { password: hash },
       create: { ...u, phone: "0900000000", password: hash },
     });
   }

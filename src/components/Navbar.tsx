@@ -78,6 +78,13 @@ export default function Navbar() {
           >
             Đăng nhập
           </a>
+          <a
+            href="/partner-register"
+            className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-200"
+            style={{ background: "#0E9F6E" }}
+          >
+            Đăng ký đối tác
+          </a>
           <button
             onClick={() => setMobileOpen(true)}
             className="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -125,6 +132,13 @@ export default function Navbar() {
                   className="btn-primary w-full text-center block"
                 >
                   Đăng nhập
+                </a>
+                <a
+                  href="/partner-register"
+                  className="mt-3 w-full text-center block py-3 rounded-xl font-semibold text-white text-sm"
+                  style={{ background: "#0E9F6E" }}
+                >
+                  Đăng ký đối tác
                 </a>
               </div>
             </div>

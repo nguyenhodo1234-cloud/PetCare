@@ -21,10 +21,31 @@ interface AuthState {
 }
 const API = "/api";
 
+function saveSession(token: string, refreshToken: string, user: User) {
+  localStorage.setItem("token", token);
+  localStorage.setItem("refresh_token", refreshToken);
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+function clearSession() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+}
+
+function getSavedUser(): User | null {
+  try {
+    const u = localStorage.getItem("user");
+    return u ? JSON.parse(u) : null;
+  } catch {
+    return null;
+  }
+}
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null,
+    user: getSavedUser(),
     token: localStorage.getItem("token"),
     loading: false,
     error: null,
@@ -40,7 +61,7 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.token = null;
-      localStorage.removeItem("token");
+      clearSession();
     },
     clearError(state) {
       state.error = null;
@@ -48,33 +69,41 @@ const authSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(login.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.access_token;
-        localStorage.setItem("token", action.payload.access_token);
+      .addCase(login.fulfilled, (s, a) => {
+        s.loading = false;
+        s.user = a.payload.user;
+        s.token = a.payload.access_token;
+        saveSession(
+          a.payload.access_token,
+          a.payload.refresh_token,
+          a.payload.user,
+        );
       })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(login.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload as string;
       })
-      .addCase(register.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(register.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.access_token;
-        localStorage.setItem("token", action.payload.access_token);
+      .addCase(register.fulfilled, (s, a) => {
+        s.loading = false;
+        s.user = a.payload.user;
+        s.token = a.payload.access_token;
+        saveSession(
+          a.payload.access_token,
+          a.payload.refresh_token,
+          a.payload.user,
+        );
       })
-      .addCase(register.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(register.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload as string;
       });
   },
 });
@@ -119,8 +148,6 @@ export const register = createAsyncThunk(
 );
 
 export const { setUser, setToken, logout, clearError } = authSlice.actions;
-
 export const store = configureStore({ reducer: { auth: authSlice.reducer } });
-
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
