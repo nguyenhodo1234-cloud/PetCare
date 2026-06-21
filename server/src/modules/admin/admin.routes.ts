@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { authenticate, authorize } from "../../middleware/auth";
 const prisma = new PrismaClient();
 const router = Router();
@@ -91,12 +92,38 @@ router.patch(
     if (!reg)
       return res.status(404).json({ success: false, error: "Không tìm thấy" });
 
+    // Kiểm tra email đã tồn tại trong users chưa
+    const existingUser = await prisma.user.findUnique({
+      where: { email: reg.email },
+    });
+
+    if (!existingUser) {
+      // Tạo tài khoản từ thông tin đăng ký
+      // business_type "clinic" → role VET, còn lại → SHOP_OWNER
+      const role = reg.businessType === "clinic" ? "VET" : "SHOP_OWNER";
+      const hash = await bcrypt.hash("123456", 12);
+      await prisma.user.create({
+        data: {
+          email: reg.email,
+          phone: reg.phone,
+          name: reg.ownerName,
+          password: hash,
+          role,
+        },
+      });
+    }
+
     await prisma.partnerRegistration.update({
       where: { id },
       data: { status: "approved" },
     });
 
-    res.json({ success: true });
+    res.json({
+      success: true,
+      message: existingUser
+        ? "Đã duyệt (tài khoản đã tồn tại, không tạo mới)"
+        : "Đã duyệt và tạo tài khoản SHOP_OWNER",
+    });
   },
 );
 

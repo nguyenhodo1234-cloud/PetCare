@@ -49,6 +49,14 @@ export default function OwnerDashboard() {
                 ⚙️ Admin
               </Link>
             )}
+            {user?.role === "VET" && (
+              <Link
+                to="/vet"
+                className="text-xs bg-[#E8F4EE] text-[#2E7D5A] px-3 py-1 rounded-full font-medium"
+              >
+                🩺 Lịch khám
+              </Link>
+            )}
             <Link
               to="/notifications"
               className="p-2 rounded-lg hover:bg-warm text-muted"
@@ -69,6 +77,28 @@ export default function OwnerDashboard() {
         <h1 className="font-display text-2xl font-extrabold text-text mb-1">
           Xin chào, {user?.name || "bạn"}! 👋
         </h1>
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+              user?.role === "VET"
+                ? "bg-blue-100 text-blue-700"
+                : user?.role === "SHOP_OWNER"
+                  ? "bg-orange-100 text-orange-700"
+                  : user?.role === "ADMIN"
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-green-100 text-green-700"
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+            {user?.role === "VET"
+              ? "Bác sĩ thú y"
+              : user?.role === "SHOP_OWNER"
+                ? "Chủ cửa hàng"
+                : user?.role === "ADMIN"
+                  ? "Quản trị viên"
+                  : "Chủ thú cưng"}
+          </span>
+        </div>
         <p className="text-muted mb-8">
           Chào mừng đến với hệ sinh thái thú cưng.
         </p>

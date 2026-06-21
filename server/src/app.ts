@@ -12,6 +12,7 @@ import reviewRoutes from "./modules/reviews/review.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import chatRoutes from "./modules/chat/chat.routes";
 import partnerRoutes from "./modules/partner/partner.routes";
+import vetRoutes from "./modules/vet/vet.routes";
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
@@ -28,6 +29,7 @@ app.use("/api/posts", socialRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/conversations", chatRoutes);
 app.use("/api/partner", partnerRoutes);
+app.use("/api/vet", vetRoutes);
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", adminRoutes);
 
