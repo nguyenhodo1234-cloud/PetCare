@@ -99,10 +99,11 @@ router.patch(
 
     if (!existingUser) {
       // Tạo tài khoản từ thông tin đăng ký
-      // business_type "clinic" → role VET, còn lại → SHOP_OWNER
-      const role = reg.businessType === "clinic" ? "VET" : "SHOP_OWNER";
+      // business_type "clinic" → role HOSPITAL_STAFF, còn lại → SHOP_OWNER
+      const role =
+        reg.businessType === "clinic" ? "HOSPITAL_STAFF" : "SHOP_OWNER";
       const hash = await bcrypt.hash("123456", 12);
-      await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           email: reg.email,
           phone: reg.phone,
@@ -111,6 +112,37 @@ router.patch(
           role,
         },
       });
+
+      // Tạo hospital cho HOSPITAL_STAFF
+      if (role === "HOSPITAL_STAFF") {
+        await prisma.hospital.create({
+          data: {
+            name: reg.shopName,
+            phone: reg.phone,
+            email: reg.email,
+            address: reg.address,
+            ownerId: newUser.id,
+            status: "ACTIVE",
+          },
+        });
+      }
+    } else {
+      // User đã tồn tại, kiểm tra xem đã có hospital chưa
+      const existingHospital = await prisma.hospital.findFirst({
+        where: { ownerId: existingUser.id },
+      });
+      if (!existingHospital && existingUser.role === "HOSPITAL_STAFF") {
+        await prisma.hospital.create({
+          data: {
+            name: reg.shopName,
+            phone: reg.phone,
+            email: reg.email,
+            address: reg.address,
+            ownerId: existingUser.id,
+            status: "ACTIVE",
+          },
+        });
+      }
     }
 
     await prisma.partnerRegistration.update({

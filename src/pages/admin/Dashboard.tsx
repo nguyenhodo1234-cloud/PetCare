@@ -264,11 +264,13 @@ export default function AdminDashboard() {
                           className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                             u.role === "ADMIN"
                               ? "bg-purple-100 text-purple-700"
-                              : u.role === "VET"
-                                ? "bg-teal/10 text-teal"
-                                : u.role === "SHOP_OWNER"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : "bg-blue-100 text-blue-700"
+                              : u.role === "HOSPITAL_STAFF"
+                                ? "bg-teal-100 text-teal-700"
+                                : u.role === "VET"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : u.role === "SHOP_OWNER"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-blue-100 text-blue-700"
                           }`}
                         >
                           {u.role}

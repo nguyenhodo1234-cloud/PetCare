@@ -16,6 +16,7 @@ import FeedPage from "./pages/social/FeedPage";
 import ChatPage from "./pages/chat/ChatPage";
 import PartnerRegisterPage from "./pages/partner/PartnerRegisterPage";
 import VetDashboard from "./pages/vet/VetDashboard";
+import HospitalManage from "./pages/vet/HospitalManage";
 import AdminDashboard from "./pages/admin/Dashboard";
 
 function HomePage() {
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/partner-register" element={<PartnerRegisterPage />} />
           <Route path="/vet" element={<VetDashboard />} />
+          <Route path="/hospital" element={<HospitalManage />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>

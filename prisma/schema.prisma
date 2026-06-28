@@ -142,10 +142,13 @@ model Hospital {
   name        String    @db.VarChar(200)
   description String?   @db.Text
   logo        String?   @db.VarChar(500)
+  cover       String?   @db.VarChar(500)
   address     String?   @db.VarChar(300)
   lat         Float?
   lng         Float?
   phone       String?   @db.VarChar(20)
+  email       String?   @db.VarChar(100)
+  ownerId     Int?      @map("owner_id")
   status      ShopStatus @default(PENDING)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -157,15 +160,20 @@ model Hospital {
 }
 
 model Veterinarian {
-  id          Int       @id @default(autoincrement())
-  hospitalId  Int       @map("hospital_id")
-  hospital    Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  userId      Int?      @map("user_id")
-  name        String    @db.VarChar(100)
-  specialty   String?   @db.VarChar(200)
-  experience  Int?
-  avatar      String?   @db.VarChar(500)
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id            Int       @id @default(autoincrement())
+  hospitalId    Int       @map("hospital_id")
+  hospital      Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  userId        Int?      @map("user_id")
+  name          String    @db.VarChar(100)
+  email         String?   @db.VarChar(100)
+  phone         String?   @db.VarChar(20)
+  specialty     String?   @db.VarChar(200)
+  experience    Int?
+  licenseNumber String?   @map("license_number") @db.VarChar(50)
+  avatar        String?   @db.VarChar(500)
+  status        String    @default("ACTIVE") @db.VarChar(20)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@map("veterinarians")
 }
@@ -180,7 +188,7 @@ model Service {
   name         String   @db.VarChar(200)
   description  String?  @db.Text
   price        Decimal? @db.Decimal(10,2)
-  duration     Int?     // minutes
+  duration     Int?
   createdAt    DateTime @default(now()) @map("created_at")
 
   appointments Appointment[]
@@ -337,6 +345,7 @@ enum UserRole {
   PET_OWNER
   SHOP_OWNER
   VET
+  HOSPITAL_STAFF
   ADMIN
 }
 

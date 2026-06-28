@@ -106,6 +106,7 @@ export default function VetDashboard() {
   });
   const [showComplete, setShowComplete] = useState(false);
   const [completingId, setCompletingId] = useState<number | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -236,7 +237,7 @@ export default function VetDashboard() {
           </p>
         </div>
 
-        {/* Date Navigation */}
+        {/* Date Navigation + Calendar */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => changeDate(-1)}
@@ -244,15 +245,24 @@ export default function VetDashboard() {
           >
             <ChevronLeft size={18} />
           </button>
-          <div className="flex-1 text-center">
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="flex-1 text-left bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-md transition-shadow"
+          >
             <p className="font-display font-bold text-gray-800">
               {formatDate(selectedDate)}
             </p>
-            <p className="text-xs text-gray-500">
-              {isToday(selectedDate) ? "Hôm nay • " : ""}
-              {appointments.length} lịch khám
-            </p>
-          </div>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-gray-500">
+                {isToday(selectedDate) ? "Hôm nay • " : ""}
+                {appointments.length} lịch khám
+              </p>
+              <ChevronRight
+                size={14}
+                className={`text-gray-400 transition-transform ${showCalendar ? "rotate-90" : ""}`}
+              />
+            </div>
+          </button>
           <button
             onClick={() => changeDate(1)}
             className="p-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
@@ -260,6 +270,18 @@ export default function VetDashboard() {
             <ChevronRight size={18} />
           </button>
         </div>
+
+        {/* Calendar Dropdown */}
+        {showCalendar && (
+          <CalendarView
+            selectedDate={selectedDate}
+            onSelect={(d) => {
+              setSelectedDate(d);
+              setShowCalendar(false);
+            }}
+            appointments={appointments}
+          />
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -672,6 +694,138 @@ export default function VetDashboard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Calendar View Component
+function CalendarView({
+  selectedDate,
+  onSelect,
+  appointments,
+}: {
+  selectedDate: Date;
+  onSelect: (d: Date) => void;
+  appointments: Appointment[];
+}) {
+  const [viewMonth, setViewMonth] = useState(
+    new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+  );
+
+  const MONTHS = [
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
+  ];
+  const DAYS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const selectedStr = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`;
+
+  // Tạo map ngày có lịch hẹn
+  const apptDates = new Set<string>();
+  appointments.forEach((a) => {
+    const d = new Date(a.dateTime);
+    apptDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  });
+
+  const prevMonth = () => {
+    setViewMonth(new Date(year, month - 1, 1));
+  };
+  const nextMonth = () => {
+    setViewMonth(new Date(year, month + 1, 1));
+  };
+  const goToday = () => {
+    const now = new Date();
+    setViewMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    onSelect(now);
+  };
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-gray-50">
+          <ChevronLeft size={18} />
+        </button>
+        <span className="font-display font-bold text-gray-800">
+          {MONTHS[month]} {year}
+        </span>
+        <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-gray-50">
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {/* Day headers */}
+      <div className="grid grid-cols-7 mb-2">
+        {DAYS.map((d) => (
+          <div
+            key={d}
+            className="text-center text-xs font-semibold text-gray-400 py-1"
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((day, i) => {
+          if (day === null) return <div key={`empty-${i}`} />;
+          const dateStr = `${year}-${month}-${day}`;
+          const isToday = dateStr === todayStr;
+          const isSelected = dateStr === selectedStr;
+          const hasAppt = apptDates.has(dateStr);
+
+          return (
+            <button
+              key={day}
+              onClick={() => onSelect(new Date(year, month, day))}
+              className={`relative w-full aspect-square rounded-xl text-sm font-medium transition-all flex flex-col items-center justify-center ${
+                isSelected
+                  ? "bg-[#2E7D5A] text-white"
+                  : isToday
+                    ? "bg-[#E8F4EE] text-[#2E7D5A] font-bold"
+                    : "hover:bg-gray-50 text-gray-700"
+              }`}
+            >
+              {day}
+              {hasAppt && (
+                <span
+                  className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-[#2E7D5A]"}`}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Today button */}
+      <button
+        onClick={goToday}
+        className="mt-4 w-full py-2 text-sm font-medium text-[#2E7D5A] hover:bg-[#E8F4EE] rounded-xl transition-colors"
+      >
+        📍 Về hôm nay
+      </button>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { authenticate, authorize } from "../../middleware/auth";
 
 const prisma = new PrismaClient();
 const router = Router();
-router.use(authenticate, authorize("VET"));
+router.use(authenticate, authorize("VET", "HOSPITAL_STAFF"));
 
 // VET Dashboard stats
 router.get("/dashboard", async (req: any, res) => {
