@@ -218,6 +218,12 @@ export default function VetDashboard() {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/medical-records"
+              className="text-xs bg-[#DDF2EA] text-[#256F63] px-3 py-1 rounded-full font-medium"
+            >
+              📋 Hồ sơ
+            </Link>
             <div className="w-9 h-9 rounded-full bg-[#2E7D5A]/10 flex items-center justify-center text-[#2E7D5A] font-bold text-sm">
               {user?.name?.charAt(0) || "V"}
             </div>

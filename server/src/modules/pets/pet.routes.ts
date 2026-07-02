@@ -6,8 +6,10 @@ const router = Router();
 router.use(authenticate);
 
 router.get("/", async (req: any, res) => {
+  const where: any = {};
+  if (req.query.all !== "1") where.ownerId = req.user.id;
   const pets = await prisma.pet.findMany({
-    where: { ownerId: req.user.id },
+    where,
     orderBy: { createdAt: "desc" },
   });
   res.json({ success: true, data: pets });

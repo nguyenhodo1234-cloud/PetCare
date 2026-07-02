@@ -83,11 +83,17 @@ model MedicalRecord {
   petId       Int       @map("pet_id")
   pet         Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
   vetId       Int?      @map("vet_id")
+  hospitalId  Int?      @map("hospital_id")
   diagnosis   String?   @db.Text
   treatment   String?   @db.Text
   notes       String?   @db.Text
+  symptoms    String?   @db.Text
+  cause       String?   @db.Text
+  conclusion  String?   @db.Text
+  status      String    @default("NEW") @db.VarChar(20)
   recordDate  DateTime  @default(now()) @map("record_date")
   createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   files       MedicalFile[]
 

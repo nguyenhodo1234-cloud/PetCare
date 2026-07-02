@@ -43,6 +43,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (token && user) {
       if (user.role === "ADMIN") nav("/admin");
+      else if (user.role === "VET" || user.role === "HOSPITAL_STAFF")
+        nav("/vet");
+      else if (user.role === "SHOP_OWNER") nav("/dashboard");
       else nav("/dashboard");
     }
     dispatch(clearError());

@@ -23,17 +23,7 @@ router.get("/", async (_req, res) => {
 
 router.use(authenticate);
 
-// Chi tiết hospital
-router.get("/:id", async (req, res) => {
-  const h = await prisma.hospital.findUnique({
-    where: { id: +req.params.id },
-    include: { services: true, veterinarians: true },
-  });
-  if (!h) return res.status(404).json({ error: "Không tìm thấy" });
-  res.json({ success: true, data: h });
-});
-
-// Hospital CRUD (HOSPITAL_STAFF + ADMIN)
+// Hospital CRUD (HOSPITAL_STAFF + ADMIN) — phải đặt trước /:id
 router.get(
   "/me",
   authorize("HOSPITAL_STAFF", "ADMIN"),
@@ -67,6 +57,16 @@ router.patch(
     res.json({ success: true, data: updated });
   },
 );
+
+// Chi tiết hospital (phải sau /me)
+router.get("/:id", async (req, res) => {
+  const h = await prisma.hospital.findUnique({
+    where: { id: +req.params.id },
+    include: { services: true, veterinarians: true },
+  });
+  if (!h) return res.status(404).json({ error: "Không tìm thấy" });
+  res.json({ success: true, data: h });
+});
 
 // Doctor management
 router.get(
@@ -120,25 +120,21 @@ router.post(
           .status(409)
           .json({ success: false, error: "Email đã tồn tại", field: "email" });
       if (await prisma.user.findUnique({ where: { email } }))
-        return res
-          .status(409)
-          .json({
-            success: false,
-            error: "Email đã được sử dụng",
-            field: "email",
-          });
+        return res.status(409).json({
+          success: false,
+          error: "Email đã được sử dụng",
+          field: "email",
+        });
     }
     if (
       licenseNumber &&
       (await prisma.veterinarian.findFirst({ where: { licenseNumber } }))
     )
-      return res
-        .status(409)
-        .json({
-          success: false,
-          error: "Số giấy phép đã tồn tại",
-          field: "licenseNumber",
-        });
+      return res.status(409).json({
+        success: false,
+        error: "Số giấy phép đã tồn tại",
+        field: "licenseNumber",
+      });
 
     let userId: number | null = null;
     if (email) {
